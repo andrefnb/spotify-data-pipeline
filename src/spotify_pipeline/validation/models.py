@@ -28,7 +28,7 @@ class Track(BaseModel):
     name: str
     duration_ms: int
     explicit: bool
-    popularity: int
+    popularity: int | None = None
     uri: str
     artists: list[Artist]
     album: Album
