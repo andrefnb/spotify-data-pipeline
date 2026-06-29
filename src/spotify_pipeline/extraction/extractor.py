@@ -10,10 +10,13 @@ from spotify_pipeline.validation.models import PlayedAt
 
 
 class Extractor:
+    """Fetches raw tracks from Spotify, validates them, and persists the raw payload."""
+
     def __init__(self, client: SpotifyClient) -> None:
         self._client = client
 
     def extract(self) -> list[PlayedAt]:
+        """Fetch, validate, and save recently played tracks; return typed records."""
         log.info("Starting extraction")
         raw_items = self._client.get_all_recently_played()
         validated = [PlayedAt.model_validate(item) for item in raw_items]
@@ -22,6 +25,7 @@ class Extractor:
         return validated
 
     def _save_raw(self, items: list[dict[str, Any]]) -> None:
+        """Write raw API items to a timestamped JSON file under data/raw/<date>/."""
         today = date.today().isoformat()
         raw_dir = Path(settings.raw_data_dir) / today
         raw_dir.mkdir(parents=True, exist_ok=True)

@@ -9,7 +9,10 @@ from spotify_pipeline.validation.models import PlayedAt
 
 
 class Transformer:
+    """Converts validated PlayedAt records into a flat, deduplicated DataFrame."""
+
     def transform(self, items: list[PlayedAt]) -> pl.DataFrame:
+        """Flatten, deduplicate on (track_id, played_at), sort by play time desc."""
         log.info("Starting transformation", record_count=len(items))
         rows = [self._flatten(item) for item in items]
         df = pl.DataFrame(rows)
@@ -19,6 +22,7 @@ class Transformer:
         return df
 
     def _flatten(self, item: PlayedAt) -> dict[str, Any]:
+        """Expand a nested PlayedAt into a single flat row dict."""
         track = item.track
         return {
             "played_at": item.played_at,
@@ -36,6 +40,7 @@ class Transformer:
         }
 
     def save(self, df: pl.DataFrame) -> Path:
+        """Write the DataFrame to data/processed/tracks.parquet and return its path."""
         processed_dir = Path(settings.processed_data_dir)
         processed_dir.mkdir(parents=True, exist_ok=True)
         path = processed_dir / "tracks.parquet"
