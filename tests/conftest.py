@@ -5,7 +5,7 @@ os.environ.setdefault("SPOTIFY_CLIENT_ID", "test_client_id")
 os.environ.setdefault("SPOTIFY_CLIENT_SECRET", "test_client_secret")
 os.environ.setdefault("SPOTIFY_REFRESH_TOKEN", "test_refresh_token")
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -46,7 +46,7 @@ def sample_track(sample_artist: Artist, sample_album: Album) -> Track:
 def sample_played_at(sample_track: Track) -> PlayedAt:
     return PlayedAt(
         track=sample_track,
-        played_at=datetime(2024, 3, 12, 10, 0, 0, tzinfo=timezone.utc),
+        played_at=datetime(2024, 3, 12, 10, 0, 0, tzinfo=UTC),
     )
 
 
@@ -61,7 +61,11 @@ def raw_recently_played_item() -> dict:
             "popularity": 75,
             "uri": "spotify:track:track1",
             "artists": [
-                {"id": "artist1", "name": "Test Artist", "uri": "spotify:artist:artist1"}
+                {
+                    "id": "artist1",
+                    "name": "Test Artist",
+                    "uri": "spotify:artist:artist1",
+                }
             ],
             "album": {
                 "id": "album1",

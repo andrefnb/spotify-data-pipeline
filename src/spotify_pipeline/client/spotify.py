@@ -80,7 +80,8 @@ class SpotifyClient:
         params: dict[str, Any] = {"limit": limit}
         if after is not None:
             params["after"] = after
-        return self._get("/me/player/recently-played", params=params)
+        result: dict[str, Any] = self._get("/me/player/recently-played", params=params)
+        return result
 
     def get_all_recently_played(self, max_items: int = 200) -> list[dict[str, Any]]:
         items: list[dict[str, Any]] = []

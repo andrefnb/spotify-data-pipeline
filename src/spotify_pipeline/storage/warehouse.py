@@ -42,7 +42,7 @@ class Warehouse:
         after = self._conn.execute("SELECT COUNT(*) FROM tracks").fetchone()[0]  # type: ignore[index]
         inserted = after - before
         log.info("Loaded into DuckDB", rows_inserted=inserted)
-        return inserted
+        return int(inserted)
 
     def close(self) -> None:
         self._conn.close()

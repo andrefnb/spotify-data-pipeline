@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from pydantic import ValidationError
@@ -8,7 +8,7 @@ from spotify_pipeline.validation.models import PlayedAt
 
 def test_played_at_parses_utc_datetime(raw_recently_played_item: dict) -> None:
     played = PlayedAt.model_validate(raw_recently_played_item)
-    assert played.played_at == datetime(2024, 3, 12, 10, 0, 0, tzinfo=timezone.utc)
+    assert played.played_at == datetime(2024, 3, 12, 10, 0, 0, tzinfo=UTC)
 
 
 def test_played_at_requires_track(raw_recently_played_item: dict) -> None:

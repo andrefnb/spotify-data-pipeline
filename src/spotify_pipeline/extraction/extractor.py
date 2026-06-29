@@ -1,6 +1,7 @@
 import json
 from datetime import date
 from pathlib import Path
+from typing import Any
 
 from spotify_pipeline.client.spotify import SpotifyClient
 from spotify_pipeline.config import settings
@@ -20,7 +21,7 @@ class Extractor:
         log.info("Validated records", count=len(validated))
         return validated
 
-    def _save_raw(self, items: list[dict]) -> None:
+    def _save_raw(self, items: list[dict[str, Any]]) -> None:
         today = date.today().isoformat()
         raw_dir = Path(settings.raw_data_dir) / today
         raw_dir.mkdir(parents=True, exist_ok=True)
