@@ -7,13 +7,17 @@ from spotify_pipeline.logging import log
 
 
 class Warehouse:
+    """DuckDB-backed analytics store for processed track plays."""
+
     def __init__(self) -> None:
+        """Open (or create) the DuckDB database and initialise the schema."""
         db_path = Path(settings.duckdb_path)
         db_path.parent.mkdir(parents=True, exist_ok=True)
         self._conn = duckdb.connect(str(db_path))
         self._init_schema()
 
     def _init_schema(self) -> None:
+        """Create the tracks table if it does not already exist."""
         self._conn.execute("""
             CREATE TABLE IF NOT EXISTS tracks (
                 played_at TIMESTAMPTZ PRIMARY KEY,
@@ -32,6 +36,7 @@ class Warehouse:
         """)
 
     def load(self, parquet_path: Path) -> int:
+        """Load a Parquet file into DuckDB, skip duplicates, return inserted count."""
         path_str = parquet_path.as_posix()
         before = self._conn.execute("SELECT COUNT(*) FROM tracks").fetchone()[0]  # type: ignore[index]
         self._conn.execute(f"""
@@ -45,4 +50,5 @@ class Warehouse:
         return int(inserted)
 
     def close(self) -> None:
+        """Close the database connection."""
         self._conn.close()

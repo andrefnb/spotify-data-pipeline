@@ -13,12 +13,15 @@ API_BASE = "https://api.spotify.com/v1"
 
 
 def _is_retryable(exc: BaseException) -> bool:
+    """Return True for transient HTTP errors and network failures worth retrying."""
     if isinstance(exc, httpx.HTTPStatusError):
         return exc.response.status_code in (429, 500, 502, 503, 504)
     return isinstance(exc, httpx.RequestError)
 
 
 class SpotifyClient:
+    """HTTP client for the Spotify Web API with token management and retries."""
+
     def __init__(self) -> None:
         self._client = httpx.Client(timeout=30)
         self._access_token: str = ""
@@ -31,10 +34,12 @@ class SpotifyClient:
         self._client.close()
 
     def _basic_auth(self) -> str:
+        """Return Base64-encoded Basic auth for the token endpoint."""
         credentials = f"{settings.spotify_client_id}:{settings.spotify_client_secret}"
         return base64.b64encode(credentials.encode()).decode()
 
     def _refresh_access_token(self) -> None:
+        """Exchange the refresh token for a new access token and cache it."""
         response = self._client.post(
             TOKEN_URL,
             headers={"Authorization": f"Basic {self._basic_auth()}"},
@@ -50,6 +55,7 @@ class SpotifyClient:
         log.info("Access token refreshed")
 
     def _ensure_token(self) -> None:
+        """Refresh the access token if it has expired or is about to expire."""
         if time.time() >= self._token_expiry:
             self._refresh_access_token()
 
@@ -60,6 +66,7 @@ class SpotifyClient:
         reraise=True,
     )
     def _get(self, path: str, params: dict[str, Any] | None = None) -> Any:
+        """Authenticated GET with automatic retry and rate-limit handling."""
         self._ensure_token()
         response = self._client.get(
             f"{API_BASE}{path}",
@@ -77,6 +84,7 @@ class SpotifyClient:
     def get_recently_played(
         self, limit: int = 50, after: int | None = None
     ) -> dict[str, Any]:
+        """Fetch one page of recently played tracks, with optional cursor offset."""
         params: dict[str, Any] = {"limit": limit}
         if after is not None:
             params["after"] = after
@@ -84,6 +92,7 @@ class SpotifyClient:
         return result
 
     def get_all_recently_played(self, max_items: int = 200) -> list[dict[str, Any]]:
+        """Page through recently played tracks and return up to max_items raw items."""
         items: list[dict[str, Any]] = []
         after: int | None = None
 
